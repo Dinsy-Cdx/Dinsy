@@ -11,6 +11,8 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@eslint/config-array": "^0.17.1",
+    "@eslint/object-schema": "^2.1.4",
     "@mui/material": "^5.15.20",
     "@nextui-org/input": "^2.2.1",
     "@nextui-org/react": "^2.4.1",
@@ -21,7 +23,7 @@
     "body-parser": "^1.20.2",
     "classnames": "^2.5.1",
     "dotenv": "^16.4.5",
-    "ethers": "^5.0.0",
+    "ethers": "^6.13.2",
     "express": "^4.19.2",
     "google-map-react": "^2.2.1",
     "lucide-react": "^0.394.0",
