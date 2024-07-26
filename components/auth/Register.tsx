@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Stack, Alert, TextField, Button, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import { RiFileCopyLine } from 'react-icons/ri';
+import { motion } from 'framer-motion';
+
 
 const getLevels = (): Level[] => [
   { level: 0, amountUSD: '1' },
@@ -278,9 +280,38 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
   };
 
   return (
-    <div style={{ background: '#0d0d0d', color: '#ffffff', padding: '2rem', marginTop: '150px',borderRadius: '8px', boxShadow: '0 0 20px rgba(0, 255, 255, 0.5)', maxWidth: '500px', margin: 'auto' }}>
-      <h2 style={{ textAlign: 'center', color: '#00ffff', fontFamily: 'Orbitron, sans-serif' }}>Register</h2>
-      <form id="registration-form" onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div
+      style={{
+        background: '#0d0d0d',
+        color: '#ffffff',
+        padding: '2rem',
+        marginTop: '150px', // Reducido el margen superior
+        borderRadius: '8px',
+        boxShadow: '0 0 20px rgba(0, 255, 255, 0.5)',
+        maxWidth: '500px',
+        margin: 'auto',
+        position: 'relative', // Asegura que los elementos flotantes estén en la posición correcta
+      }}
+    >
+      <h2
+        style={{
+          textAlign: 'center',
+          color: '#00ffff',
+          fontFamily: 'Orbitron, sans-serif',
+          marginBottom: '1rem', // Añadido un margen inferior para separar del formulario
+        }}
+      >
+        Register
+      </h2>
+      <form
+        id="registration-form"
+        onSubmit={handleFormSubmit}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+        }}
+      >
         <Stack spacing={2}>
           <TextField
             label="First Name"
@@ -289,7 +320,11 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             onChange={handleInputChange}
             required
             variant="outlined"
-            style={{ background: '#1a1a1a', borderRadius: '4px' }}
+            style={{
+              background: '#1a1a1a',
+              borderRadius: '4px',
+              marginBottom: '1rem', // Añadido un margen inferior para separar de otros campos
+            }}
             InputLabelProps={{ style: { color: '#00ffff' } }}
             InputProps={{ style: { color: '#ffffff' } }}
           />
@@ -300,7 +335,11 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             onChange={handleInputChange}
             required
             variant="outlined"
-            style={{ background: '#1a1a1a', borderRadius: '4px' }}
+            style={{
+              background: '#1a1a1a',
+              borderRadius: '4px',
+              marginBottom: '1rem', // Añadido un margen inferior para separar de otros campos
+            }}
             InputLabelProps={{ style: { color: '#00ffff' } }}
             InputProps={{ style: { color: '#ffffff' } }}
           />
@@ -311,7 +350,11 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             onChange={handleInputChange}
             required
             variant="outlined"
-            style={{ background: '#1a1a1a', borderRadius: '4px' }}
+            style={{
+              background: '#1a1a1a',
+              borderRadius: '4px',
+              marginBottom: '1rem', // Añadido un margen inferior para separar de otros campos
+            }}
             InputLabelProps={{ style: { color: '#00ffff' } }}
             InputProps={{ style: { color: '#ffffff' } }}
           />
@@ -327,7 +370,7 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             >
               {levels.map((level) => (
                 <MenuItem key={level.level} value={level.level.toString()} style={{ background: '#1a1a1a', color: '#00ffff' }}>
-                  {level.level}: ${level.amountUSD}
+                  Level {level.level} - ${level.amountUSD}
                 </MenuItem>
               ))}
               <MenuItem value="0" style={{ background: '#1a1a1a', color: '#00ffff' }}>Custom Amount</MenuItem>
@@ -341,7 +384,11 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
               onChange={handleInputChange}
               required
               variant="outlined"
-              style={{ background: '#1a1a1a', borderRadius: '4px' }}
+              style={{
+                background: '#1a1a1a',
+                borderRadius: '4px',
+                marginBottom: '1rem', // Añadido un margen inferior para separar de otros campos
+              }}
               InputLabelProps={{ style: { color: '#00ffff' } }}
               InputProps={{ style: { color: '#ffffff' } }}
             />
@@ -352,7 +399,11 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             value={formData.sponsor}
             onChange={handleInputChange}
             variant="outlined"
-            style={{ background: '#1a1a1a', borderRadius: '4px' }}
+            style={{
+              background: '#1a1a1a',
+              borderRadius: '4px',
+              marginBottom: '1rem', // Añadido un margen inferior para separar de otros campos
+            }}
             InputLabelProps={{ style: { color: '#00ffff' } }}
             InputProps={{ style: { color: '#ffffff' } }}
           />
@@ -360,35 +411,81 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             type="button"
             onClick={handleButtonClick}
             variant="contained"
-            style={{ background: '#00ffff', color: '#000000', fontWeight: 'bold', boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)' }}
+            style={{
+              background: '#00ffff',
+              color: '#000000',
+              fontWeight: 'bold',
+              boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)',
+              marginBottom: '1rem', // Añadido un margen inferior para separar de otros botones
+            }}
             disabled={loading}
           >
             {loading ? 'Processing...' : 'Register'}
           </Button>
           {alert && (
-            <Alert severity={alert.type} onClose={() => setAlert(null)} style={{ background: '#1a1a1a', color: '#ffffff', borderColor: '#00ffff' }}>
+            <Alert
+              severity={alert.type}
+              onClose={() => setAlert(null)}
+              style={{
+                background: '#1a1a1a',
+                color: '#ffffff',
+                borderColor: '#00ffff',
+                marginBottom: '1rem', // Añadido un margen inferior para separar de otros elementos
+              }}
+            >
               {alert.message}
             </Alert>
           )}
         </Stack>
       </form>
       {!isWalletConnected ? (
-        <Button onClick={connectWallet} variant="contained" style={{ background: '#00ffff', color: '#000000', fontWeight: 'bold', marginTop: '1rem', boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)' }} disabled={loading}>
+        <Button
+          onClick={connectWallet}
+          variant="contained"
+          style={{
+            background: '#00ffff',
+            color: '#000000',
+            fontWeight: 'bold',
+            marginTop: '1rem',
+            boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)',
+          }}
+          disabled={loading}
+        >
           Connect Wallet
         </Button>
       ) : (
         <div style={{ marginTop: '1rem', textAlign: 'center' }}>
           <p>Wallet Address: {walletAddress}</p>
-          <Button onClick={handleCopyWalletAddress} startIcon={<RiFileCopyLine />} style={{ background: '#00ffff', color: '#000000', margin: '0.5rem', boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)' }}>
+          <Button
+            onClick={handleCopyWalletAddress}
+            startIcon={<RiFileCopyLine />}
+            style={{
+              background: '#00ffff',
+              color: '#000000',
+              margin: '0.5rem',
+              boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)',
+            }}
+          >
             Copy Wallet Address
           </Button>
-          <Button onClick={disconnectWallet} variant="contained" style={{ background: '#ff0044', color: '#ffffff', margin: '0.5rem', boxShadow: '0 0 10px rgba(255, 0, 68, 0.5)' }} disabled={loading}>
+          <Button
+            onClick={disconnectWallet}
+            variant="contained"
+            style={{
+              background: '#ff0044',
+              color: '#ffffff',
+              margin: '0.5rem',
+              boxShadow: '0 0 10px rgba(255, 0, 68, 0.5)',
+            }}
+            disabled={loading}
+          >
             Disconnect Wallet
           </Button>
         </div>
       )}
     </div>
   );
+  
 };
 
 export default Register;
