@@ -29,7 +29,6 @@ const Login: React.FC<LoginProps> = ({ setShowForm }) => {
 
     const handleWalletConnect = async () => {
         try {
-            // Intentar desconectar la cuenta actual primero
             if (ethereum && ethereum.selectedAddress) {
                 await ethereum.request({
                     method: 'wallet_requestPermissions',
@@ -37,12 +36,11 @@ const Login: React.FC<LoginProps> = ({ setShowForm }) => {
                 });
             }
 
-            // Solicitar permisos de conexión
             const accounts = await ethereum.request({ method: "eth_requestAccounts" });
             setWalletAddress(accounts[0]);
             const user = await checkIfWalletRegistered(accounts[0]);
             if (user) {
-                setUser(user); // Guardar los datos del usuario en el contexto
+                setUser(user);
                 setAlert({ type: 'success', message: 'Login successful!' });
                 window.location.href = '/dashboard';
             } else {
@@ -61,8 +59,9 @@ const Login: React.FC<LoginProps> = ({ setShowForm }) => {
                 throw new Error('Failed to check wallet registration');
             }
             const data = await response.json();
+            console.log('API response:', data);
             if (data.isRegistered) {
-                return data.user; // Asegúrate de que la respuesta de la API incluye todos los datos del usuario
+                return data.user;
             } else {
                 return null;
             }
@@ -74,12 +73,18 @@ const Login: React.FC<LoginProps> = ({ setShowForm }) => {
     };
 
     return (
-        <div className="flex justify-center items-center h-full min-h-screen bg-gradient-to-r">
-            <div className="w-full max-w-md mx-auto rounded-lg p-8 shadow-xl bg-gray-600 bg-opacity-90 backdrop-blur-lg">
-                <h2 className="text-4xl font-bold text-center text-white mb-8">Inicia Sesión</h2>
+        <div>
+            <div className="w-full max-w-md mx-auto p-8 bg-white rounded-xl shadow-lg relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-100 to-teal-300 opacity-40 rounded-xl -z-10"></div>
+                <h2 className="text-4xl font-bold text-center text-teal-600 mb-6">Inicia Sesión</h2>
+                <div className="flex justify-center mb-4">
+                    <div className="w-20 h-20 bg-teal-500 rounded-full flex items-center justify-center shadow-lg">
+                        <FaEthereum className="text-white text-3xl" />
+                    </div>
+                </div>
                 <button
                     onClick={handleWalletConnect}
-                    className="w-full px-4 py-2 my-2 rounded-md text-lg font-medium bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center gap-2 transition duration-300 ease-in-out transform hover:scale-105"
+                    className="w-full px-4 py-2 my-2 rounded-md text-lg font-semibold bg-teal-600 text-white hover:bg-teal-700 flex items-center justify-center gap-2 transition-transform duration-300 ease-in-out transform hover:scale-105"
                 >
                     <FaEthereum />
                     Ingresa con Metamask
@@ -87,7 +92,7 @@ const Login: React.FC<LoginProps> = ({ setShowForm }) => {
                 <div className="mt-6 text-center">
                     <a
                         href="#"
-                        className="text-lg text-blue-400 hover:underline hover:text-blue-100 transition duration-300"
+                        className="text-lg text-teal-500 hover:underline hover:text-teal-700 transition duration-300"
                         onClick={() => setShowForm(true)}
                     >
                         No tienes cuenta? Registrate
@@ -95,7 +100,9 @@ const Login: React.FC<LoginProps> = ({ setShowForm }) => {
                 </div>
                 {alert && (
                     <Stack sx={{ width: '100%' }} spacing={2} className="mt-6">
-                        <Alert severity={alert.type}>{alert.message}</Alert>
+                        <Alert severity={alert.type} className="bg-white text-black">
+                            {alert.message}
+                        </Alert>
                     </Stack>
                 )}
             </div>

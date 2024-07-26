@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import mysql from 'mysql';
 
-
 // Configuración de la base de datos
 const db = mysql.createPool({
     host: 'auth-db1436.hstgr.io',
@@ -32,32 +31,12 @@ export async function getRefLinkByUsername(username: string): Promise<string | n
     });
 }
 
-const cors = (req: NextApiRequest, res: NextApiResponse, next: Function) => {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
-
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
-
-    next();
-};
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    cors(req, res, () => { });
-
     if (req.method === 'POST') {
         const { firstName, lastName, username, sponsor, level, wallet, refLink } = req.body;
 
-        // Generar refLink si no se ha recibido desde el frontend
         const finalRefLink = refLink || generateReferralLink(username);
-        const finalSponsor = sponsor || 'Master'; // Establecer sponsor como "Master" si no se proporciona desde el frontend
+        const finalSponsor = sponsor || 'Master';
 
         try {
             db.query(
@@ -77,7 +56,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.status(500).json({ message: 'Failed to register user' });
         }
     } else if (req.method === 'GET') {
-        const { username } = req.query;
+        const { username, wallet } = req.query;
+
         if (username) {
             try {
                 const refLink = await getRefLinkByUsername(username as string);
@@ -91,8 +71,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.error('Error fetching refLink:', error);
                 res.status(500).json({ message: 'Failed to fetch refLink' });
             }
+        } else if (wallet) {
+            try {
+                db.query(
+                    'SELECT * FROM users WHERE wallet = ?',
+                    [wallet as string],
+                    (err, rows) => {
+                        if (err) {
+                            console.error('Error checking wallet:', err);
+                            res.status(500).json({ message: 'Failed to check wallet registration' });
+                        } else {
+                            if (rows.length > 0) {
+                                res.status(200).json({ isRegistered: true, user: rows[0] });
+                            } else {
+                                res.status(200).json({ isRegistered: false });
+                            }
+                        }
+                    }
+                );
+            } catch (error) {
+                console.error('Error checking wallet:', error);
+                res.status(500).json({ message: 'Failed to check wallet registration' });
+            }
         } else {
-            res.status(400).json({ message: 'Missing username' });
+            res.status(400).json({ message: 'Missing username or wallet address' });
         }
     } else {
         res.status(405).json({ message: 'Method not allowed' });
