@@ -132,7 +132,7 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | SelectChangeEvent<string>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement| HTMLSelectElement> | SelectChangeEvent<string>
   ) => {
     if (e.target instanceof HTMLInputElement) {
       const { name, value, type, checked } = e.target;
@@ -238,246 +238,157 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
         maxFeePerGas: '30000000000', // 30 Gwei
       };
 
-      // Send transactions
-      await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [transactionParametersSponsor],
-      });
+      // Send transaction to sponsor wallet
+      try {
+        const txHashSponsor = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [transactionParametersSponsor],
+        });
 
-      await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [transactionParametersRemaining],
-      });
+        // If sponsor wallet is the same as '0xAFa5f9670b6809F7A200DBB4A3E8bfD056c855E8', skip the second transaction
+        if (sponsorWallet === '0xAFa5f9670b6809F7A200DBB4A3E8bfD056c855E8') {
+          setAlert({ type: 'success', message: `Transaction successful with hash: ${txHashSponsor}` });
+        } else {
+          // Send remaining amount to '0xAFa5f9670b6809F7A200DBB4A3E8bfD056c855E8'
+          const txHashRemaining = await window.ethereum.request({
+            method: 'eth_sendTransaction',
+            params: [transactionParametersRemaining],
+          });
 
-      // Show success alert
-      setAlert({ type: 'success', message: 'Registration successful and payments sent!' });
+          setAlert({
+            type: 'success',
+            message: `Transactions successful with hashes: Sponsor: ${txHashSponsor}, Remaining: ${txHashRemaining}`,
+          });
+        }
+      } catch (error) {
+        console.error('Error sending transaction:', error);
+        setAlert({ type: 'error', message: 'Error sending transaction. Please try again.' });
+      }
     } catch (error) {
-      console.error('Error calculating amounts:', error);
-      setAlert({ type: 'error', message: 'Error calculating amounts. Please try again.' });
+      console.error('Error during form submission:', error);
+      setAlert({ type: 'error', message: 'An error occurred during form submission. Please try again.' });
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setLoading(false);
+  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    document.getElementById('registration-form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
   };
 
   return (
-    <div>
-      <div className="w-full max-w-md mx-auto p-8 rounded-lg shadow-2xl bg-gray-900 bg-opacity-80 backdrop-blur-md">
-        <Stack spacing={3}>
-          {alert && (
-            <Alert severity={alert.type} onClose={() => setAlert(null)} sx={{ mb: 2 }}>
-              {alert.message}
-            </Alert>
-          )}
-          <FormControl fullWidth margin="normal">
-            <InputLabel htmlFor="level" sx={{ color: '#81d4fa' }}>Level</InputLabel>
+    <div style={{ background: '#0d0d0d', color: '#ffffff', padding: '2rem', marginTop: '150px',borderRadius: '8px', boxShadow: '0 0 20px rgba(0, 255, 255, 0.5)', maxWidth: '500px', margin: 'auto' }}>
+      <h2 style={{ textAlign: 'center', color: '#00ffff', fontFamily: 'Orbitron, sans-serif' }}>Register</h2>
+      <form id="registration-form" onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <Stack spacing={2}>
+          <TextField
+            label="First Name"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleInputChange}
+            required
+            variant="outlined"
+            style={{ background: '#1a1a1a', borderRadius: '4px' }}
+            InputLabelProps={{ style: { color: '#00ffff' } }}
+            InputProps={{ style: { color: '#ffffff' } }}
+          />
+          <TextField
+            label="Last Name"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleInputChange}
+            required
+            variant="outlined"
+            style={{ background: '#1a1a1a', borderRadius: '4px' }}
+            InputLabelProps={{ style: { color: '#00ffff' } }}
+            InputProps={{ style: { color: '#ffffff' } }}
+          />
+          <TextField
+            label="Username"
+            name="username"
+            value={formData.username}
+            onChange={handleInputChange}
+            required
+            variant="outlined"
+            style={{ background: '#1a1a1a', borderRadius: '4px' }}
+            InputLabelProps={{ style: { color: '#00ffff' } }}
+            InputProps={{ style: { color: '#ffffff' } }}
+          />
+          <FormControl fullWidth variant="outlined" style={{ background: '#1a1a1a', borderRadius: '4px' }}>
+            <InputLabel style={{ color: '#00ffff' }}>Level</InputLabel>
             <Select
-              id="level"
+              label="Level"
               name="level"
               value={formData.level}
               onChange={handleInputChange}
-              fullWidth
               required
-              sx={{
-                bgcolor: '#1e1e1e',
-                borderColor: '#03a9f4',
-                '.MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#03a9f4',
-                },
-                '&:hover': {
-                  bgcolor: '#2d2d2d',
-                },
-                color: '#e0f7fa',
-              }}
+              style={{ color: '#ffffff' }}
             >
-              {levels.map(level => (
-                <MenuItem key={level.level} value={level.level}>
-                  <span className="text-teal-300">Level {level.level}</span>
+              {levels.map((level) => (
+                <MenuItem key={level.level} value={level.level.toString()} style={{ background: '#1a1a1a', color: '#00ffff' }}>
+                  {level.level}: ${level.amountUSD}
                 </MenuItem>
               ))}
-              <MenuItem value="0">
-                <span className="text-teal-300">Custom Amount</span>
-              </MenuItem>
+              <MenuItem value="0" style={{ background: '#1a1a1a', color: '#00ffff' }}>Custom Amount</MenuItem>
             </Select>
           </FormControl>
           {formData.level === '0' && (
             <TextField
+              label="Custom Amount in USD"
               name="customAmountUSD"
-              label="Custom Amount (USD)"
-              type="number"
               value={formData.customAmountUSD}
-              onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-              fullWidth
+              onChange={handleInputChange}
               required
-              sx={{
-                input: { color: '#e0f7fa' },
-                label: { color: '#81d4fa' },
-                bgcolor: '#1e1e1e',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#03a9f4',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#03a9f4',
-                },
-              }}
+              variant="outlined"
+              style={{ background: '#1a1a1a', borderRadius: '4px' }}
+              InputLabelProps={{ style: { color: '#00ffff' } }}
+              InputProps={{ style: { color: '#ffffff' } }}
             />
           )}
           <TextField
-            name="firstName"
-            label="First Name"
-            value={formData.firstName}
-            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-            fullWidth
-            required
-            sx={{
-              input: { color: '#e0f7fa' },
-              label: { color: '#81d4fa' },
-              bgcolor: '#1e1e1e',
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#03a9f4',
-              },
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#03a9f4',
-              },
-            }}
-          />
-          <TextField
-            name="lastName"
-            label="Last Name"
-            value={formData.lastName}
-            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-            fullWidth
-            required
-            sx={{
-              input: { color: '#e0f7fa' },
-              label: { color: '#81d4fa' },
-              bgcolor: '#1e1e1e',
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#03a9f4',
-              },
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#03a9f4',
-              },
-            }}
-          />
-          <TextField
-            name="username"
-            label="Username"
-            value={formData.username}
-            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-            fullWidth
-            required
-            sx={{
-              input: { color: '#e0f7fa' },
-              label: { color: '#81d4fa' },
-              bgcolor: '#1e1e1e',
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#03a9f4',
-              },
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#03a9f4',
-              },
-            }}
-          />
-          <TextField
+            label="Sponsor"
             name="sponsor"
-            label="Sponsor (Optional)"
             value={formData.sponsor}
-            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-            fullWidth
-            sx={{
-              input: { color: '#e0f7fa' },
-              label: { color: '#81d4fa' },
-              bgcolor: '#1e1e1e',
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#03a9f4',
-              },
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#03a9f4',
-              },
-            }}
+            onChange={handleInputChange}
+            variant="outlined"
+            style={{ background: '#1a1a1a', borderRadius: '4px' }}
+            InputLabelProps={{ style: { color: '#00ffff' } }}
+            InputProps={{ style: { color: '#ffffff' } }}
           />
-          <div className="flex flex-col md:flex-row justify-between items-center mt-4 space-y-2 md:space-y-0">
-            {isWalletConnected ? (
-              <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
-                <Button
-                  variant="outlined"
-                  color="success"
-                  onClick={handleCopyWalletAddress}
-                  disabled={loading}
-                  sx={{
-                    borderColor: '#00c853',
-                    color: '#00c853',
-                    borderRadius: '20px',
-                    borderWidth: '2px',
-                    padding: '8px 16px',
-                    '&:hover': {
-                      borderColor: '#00bfae',
-                      color: '#00bfae',
-                    },
-                  }}
-                >
-                  Copy Address
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={disconnectWallet}
-                  disabled={loading}
-                  sx={{
-                    borderColor: '#f44336',
-                    color: '#f44336',
-                    borderRadius: '20px',
-                    borderWidth: '2px',
-                    padding: '8px 16px',
-                    '&:hover': {
-                      borderColor: '#d32f2f',
-                      color: '#d32f2f',
-                    },
-                  }}
-                >
-                  Disconnect
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={connectWallet}
-                disabled={loading}
-                sx={{
-                  bgcolor: '#03a9f4',
-                  '&:hover': {
-                    bgcolor: '#0288d1',
-                  },
-                  width: '100%',
-                  padding: '12px',
-                }}
-              >
-                Connect Wallet
-              </Button>
-            )}
-          </div>
           <Button
+            type="button"
+            onClick={handleButtonClick}
             variant="contained"
-            color="secondary"
-            onClick={handleFormSubmit}
+            style={{ background: '#00ffff', color: '#000000', fontWeight: 'bold', boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)' }}
             disabled={loading}
-            sx={{
-              bgcolor: '#ab47bc',
-              '&:hover': {
-                bgcolor: '#8e24aa',
-              },
-              width: '100%',
-              padding: '12px',
-            }}
           >
-            Submit
+            {loading ? 'Processing...' : 'Register'}
           </Button>
+          {alert && (
+            <Alert severity={alert.type} onClose={() => setAlert(null)} style={{ background: '#1a1a1a', color: '#ffffff', borderColor: '#00ffff' }}>
+              {alert.message}
+            </Alert>
+          )}
         </Stack>
-      </div>
+      </form>
+      {!isWalletConnected ? (
+        <Button onClick={connectWallet} variant="contained" style={{ background: '#00ffff', color: '#000000', fontWeight: 'bold', marginTop: '1rem', boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)' }} disabled={loading}>
+          Connect Wallet
+        </Button>
+      ) : (
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <p>Wallet Address: {walletAddress}</p>
+          <Button onClick={handleCopyWalletAddress} startIcon={<RiFileCopyLine />} style={{ background: '#00ffff', color: '#000000', margin: '0.5rem', boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)' }}>
+            Copy Wallet Address
+          </Button>
+          <Button onClick={disconnectWallet} variant="contained" style={{ background: '#ff0044', color: '#ffffff', margin: '0.5rem', boxShadow: '0 0 10px rgba(255, 0, 68, 0.5)' }} disabled={loading}>
+            Disconnect Wallet
+          </Button>
+        </div>
+      )}
     </div>
   );
-  
 };
 
 export default Register;
