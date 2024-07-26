@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { SelectChangeEvent } from '@mui/material';
-import { Stack, Alert, CircularProgress, TextField, Button, Box, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Stack, Alert, CircularProgress, TextField, Button, Box, Typography, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import { RiFileCopyLine } from 'react-icons/ri';
 
 const getLevels = (): Level[] => [
@@ -132,7 +131,6 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
     }
   };
 
-// Modificar la función para manejar diferentes tipos de eventos
 const handleInputChange = (
   e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | SelectChangeEvent<string>
 ) => {
@@ -166,7 +164,7 @@ const handleInputChange = (
     }));
   }
 };
-  
+
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -258,101 +256,131 @@ const handleInputChange = (
       }
     } catch (error) {
       console.error('Error calculating amounts:', error);
-      setAlert({ type: 'error', message: 'Error calculating amounts.' });
-    } finally {
-      setLoading(false);
+      setAlert({ type: 'error', message: 'Error calculating amounts. Please try again.' });
     }
+
+    setLoading(false);
   };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 600, mx: 'auto', mt: 4, backgroundColor: '#333', borderRadius: 2 }}>
-      {alert && (
-        <Alert severity={alert.type} onClose={() => setAlert(null)}>
-          {alert.message}
-        </Alert>
-      )}
-      <Typography variant="h4" component="h1" gutterBottom color="white">
-        Registration Form
+    <Box
+      sx={{
+        backgroundColor: '#1b1b1b',
+        color: '#e0f7fa',
+        padding: '2rem',
+        borderRadius: '8px',
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
+      }}
+    >
+      <Typography variant="h4" gutterBottom>
+        Register
       </Typography>
-      <Stack spacing={3}>
-        <TextField
-          label="First Name"
-          name="firstName"
-          value={formData.firstName}
-          onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-          fullWidth
-        />
-        <TextField
-          label="Last Name"
-          name="lastName"
-          value={formData.lastName}
-          onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-          fullWidth
-        />
-        <TextField
-          label="Username"
-          name="username"
-          value={formData.username}
-          onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-          fullWidth
-        />
-        <FormControl fullWidth>
-          <InputLabel>Level</InputLabel>
-          <Select
-            name="level"
-            value={formData.level}
-            onChange={handleInputChange as (event: SelectChangeEvent<string>) => void} // Asegúrate de castear correctamente aquí
-            label="Level"
-          >
-            {levels.map((level) => (
-              <MenuItem key={level.level} value={level.level.toString()}>
-                Level {level.level} - ${level.amountUSD}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        {formData.level === '0' && (
+      <form onSubmit={handleFormSubmit}>
+        <Stack spacing={2}>
           <TextField
-            label="Custom Amount (USD)"
-            name="customAmountUSD"
-            value={formData.customAmountUSD}
+            label="First Name"
+            variant="outlined"
+            name="firstName"
+            value={formData.firstName}
             onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-            fullWidth
-            type="number"
+            sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
+            InputProps={{
+              style: { color: '#e0f7fa' }
+            }}
           />
-        )}
-        <TextField
-          label="Sponsor Username"
-          name="sponsor"
-          value={formData.sponsor}
-          onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-          fullWidth
-        />
-        {walletAddress && (
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography color="white">Connected Wallet: {walletAddress}</Typography>
-            <Button variant="outlined" color="primary" onClick={handleCopyWalletAddress}>
-              <RiFileCopyLine />
+          <TextField
+            label="Last Name"
+            variant="outlined"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
+            sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
+            InputProps={{
+              style: { color: '#e0f7fa' }
+            }}
+          />
+          <TextField
+            label="Username"
+            variant="outlined"
+            name="username"
+            value={formData.username}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
+            sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
+            InputProps={{
+              style: { color: '#e0f7fa' }
+            }}
+          />
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel id="level-label" sx={{ color: '#80deea' }}>Level</InputLabel>
+            <Select
+              labelId="level-label"
+              label="Level"
+              name="level"
+              value={formData.level}
+              onChange={handleInputChange as (event: SelectChangeEvent<string>) => void} // Asegúrate de castear correctamente aquí
+              sx={{ color: '#e0f7fa', '.MuiOutlinedInput-notchedOutline': { borderColor: '#80deea' } }}
+            >
+              {levels.map(level => (
+                <MenuItem key={level.level} value={level.level.toString()}>
+                  Level {level.level} - ${level.amountUSD}
+                </MenuItem>
+              ))}
+              <MenuItem value="0">Custom Amount</MenuItem>
+            </Select>
+          </FormControl>
+          {formData.level === '0' && (
+            <TextField
+              label="Custom Amount (USD)"
+              variant="outlined"
+              name="customAmountUSD"
+              value={formData.customAmountUSD}
+              onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
+              sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
+              InputProps={{
+                style: { color: '#e0f7fa' }
+              }}
+            />
+          )}
+          <TextField
+            label="Sponsor Username"
+            variant="outlined"
+            name="sponsor"
+            value={formData.sponsor}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
+            sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
+            InputProps={{
+              style: { color: '#e0f7fa' }
+            }}
+          />
+          {loading ? (
+            <CircularProgress color="secondary" />
+          ) : (
+            <Button type="submit" variant="contained" sx={{ backgroundColor: '#009688', color: '#ffffff' }}>
+              Register
             </Button>
-            <Button variant="outlined" color="secondary" onClick={disconnectWallet} disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : 'Disconnect Wallet'}
-            </Button>
-          </Box>
-        )}
-        {!walletAddress && (
-          <Button variant="contained" color="primary" onClick={connectWallet} disabled={loading}>
-            {loading ? <CircularProgress size={24} /> : 'Connect Wallet'}
+          )}
+          {alert && (
+            <Alert severity={alert.type} onClose={() => setAlert(null)}>
+              {alert.message}
+            </Alert>
+          )}
+        </Stack>
+      </form>
+      {isWalletConnected ? (
+        <Box mt={2}>
+          <Typography variant="body1">
+            Wallet connected: {walletAddress}{' '}
+            <RiFileCopyLine onClick={handleCopyWalletAddress} style={{ cursor: 'pointer', color: '#80deea' }} />
+          </Typography>
+          <Button onClick={disconnectWallet} variant="outlined" sx={{ borderColor: '#009688', color: '#009688' }}>
+            Disconnect Wallet
           </Button>
-        )}
-        <Button
-        type="submit"
-        variant="contained"
-        color="primary"
-        disabled={loading}
-      >
-        {loading ? <CircularProgress size={24} /> : 'Submit'}
-      </Button>
-      </Stack>
+        </Box>
+      ) : (
+        <Button onClick={connectWallet} variant="contained" sx={{ backgroundColor: '#009688', color: '#ffffff', mt: 2 }}>
+          Connect Wallet
+        </Button>
+      )}
     </Box>
   );
 };
