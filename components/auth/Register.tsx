@@ -305,7 +305,7 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
               label="Custom Amount (USD)"
               type="number"
               value={formData.customAmountUSD}
-              onChange={handleInputChange}
+              onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
               fullWidth
               required
               sx={{
@@ -325,7 +325,7 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             name="firstName"
             label="First Name"
             value={formData.firstName}
-            onChange={handleInputChange}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
             fullWidth
             required
             sx={{
@@ -344,7 +344,7 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             name="lastName"
             label="Last Name"
             value={formData.lastName}
-            onChange={handleInputChange}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
             fullWidth
             required
             sx={{
@@ -363,7 +363,7 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             name="username"
             label="Username"
             value={formData.username}
-            onChange={handleInputChange}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
             fullWidth
             required
             sx={{
@@ -382,7 +382,7 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
             name="sponsor"
             label="Sponsor (Optional)"
             value={formData.sponsor}
-            onChange={handleInputChange}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
             fullWidth
             sx={{
               input: { color: '#e0f7fa' },
