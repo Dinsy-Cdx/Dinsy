@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Stack, Alert, CircularProgress, TextField, Button, Box, Typography, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
+import { Stack, Alert, TextField, Button, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import { RiFileCopyLine } from 'react-icons/ri';
 
 const getLevels = (): Level[] => [
@@ -14,7 +14,7 @@ const getLevels = (): Level[] => [
   { level: 7, amountUSD: '100000' },
 ];
 
-const USD_TO_BNB = 593; // Precio estático de BNB en USD
+const USD_TO_BNB = 593; // Static BNB price in USD
 
 interface Level {
   level: number;
@@ -131,53 +131,52 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
     }
   };
 
-const handleInputChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | SelectChangeEvent<string>
-) => {
-  if (e.target instanceof HTMLInputElement) {
-    const { name, value, type, checked } = e.target;
-
-    if (type === 'checkbox') {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | SelectChangeEvent<string>
+  ) => {
+    if (e.target instanceof HTMLInputElement) {
+      const { name, value, type, checked } = e.target;
+  
+      if (type === 'checkbox') {
+        setFormData(prevData => ({
+          ...prevData,
+          [name]: checked,
+        }));
+      } else {
+        setFormData(prevData => ({
+          ...prevData,
+          [name]: value,
+        }));
+      }
+    } else if (e.target instanceof HTMLSelectElement) {
+      const { name, value } = e.target;
+  
       setFormData(prevData => ({
         ...prevData,
-        [name]: checked,
+        [name]: value,
       }));
     } else {
+      // Manejar el evento SelectChangeEvent
+      const { name, value } = e.target as { name: string; value: string };
       setFormData(prevData => ({
         ...prevData,
         [name]: value,
       }));
     }
-  } else if (e.target instanceof HTMLSelectElement) {
-    const { name, value } = e.target;
-
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value,
-    }));
-  } else {
-    // Manejar el evento SelectChangeEvent
-    const { name, value } = e.target as { name: string; value: string };
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value,
-    }));
-  }
-};
-
+  };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
-    // Verificar conexión de la wallet
+    // Verify wallet connection
     if (!walletAddress) {
       setAlert({ type: 'error', message: 'Please connect your wallet before proceeding.' });
       setLoading(false);
       return;
     }
 
-    // Verificar si el sponsor existe
+    // Verify sponsor existence
     if (formData.sponsor && !sponsorWallet) {
       try {
         const response = await axios.get(`/api/getsponsorWallets?sponsor=${formData.sponsor}`);
@@ -201,7 +200,7 @@ const handleInputChange = (
       return;
     }
 
-    // Calcular los montos en BNB y Wei
+    // Calculate amounts in BNB and Wei
     try {
       const selectedLevel = levels.find((level: Level) => level.level.toString() === formData.level);
       if (!selectedLevel) {
@@ -212,7 +211,7 @@ const handleInputChange = (
 
       const amountUSD = formData.level === '0' ? parseFloat(formData.customAmountUSD || '0') : parseFloat(selectedLevel.amountUSD);
       const amountBNB = amountUSD / USD_TO_BNB;
-      const amountWei = BigInt(Math.floor(amountBNB * 1e18)).toString(); // Asegúrate de redondear hacia abajo para obtener un entero en Wei
+      const amountWei = BigInt(Math.floor(amountBNB * 1e18)).toString(); // Ensure rounding down to get an integer in Wei
 
       const sponsorAmountUSD = amountUSD * 0.09;
       const sponsorAmountBNB = sponsorAmountUSD / USD_TO_BNB;
@@ -222,7 +221,7 @@ const handleInputChange = (
       const remainingAmountBNB = remainingAmountUSD / USD_TO_BNB;
       const remainingAmountWei = BigInt(Math.floor(remainingAmountBNB * 1e18)).toString();
 
-      // Parámetros de transacción
+      // Transaction parameters
       const transactionParametersSponsor = {
         from: walletAddress,
         to: sponsorWallet,
@@ -239,21 +238,19 @@ const handleInputChange = (
         maxFeePerGas: '30000000000', // 30 Gwei
       };
 
-      if (window.ethereum) {
-        try {
-          await window.ethereum.request({
-            method: 'eth_sendTransaction',
-            params: [transactionParametersSponsor, transactionParametersRemaining],
-          });
+      // Send transactions
+      await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [transactionParametersSponsor],
+      });
 
-          setAlert({ type: 'success', message: 'Transaction successful!' });
-        } catch (error) {
-          console.error(error);
-          setAlert({ type: 'error', message: 'Transaction failed. Please try again.' });
-        }
-      } else {
-        setAlert({ type: 'error', message: 'MetaMask is not installed.' });
-      }
+      await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [transactionParametersRemaining],
+      });
+
+      // Show success alert
+      setAlert({ type: 'success', message: 'Registration successful and payments sent!' });
     } catch (error) {
       console.error('Error calculating amounts:', error);
       setAlert({ type: 'error', message: 'Error calculating amounts. Please try again.' });
@@ -263,126 +260,224 @@ const handleInputChange = (
   };
 
   return (
-    <Box
-      sx={{
-        backgroundColor: '#1b1b1b',
-        color: '#e0f7fa',
-        padding: '2rem',
-        borderRadius: '8px',
-        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
-      }}
-    >
-      <Typography variant="h4" gutterBottom>
-        Register
-      </Typography>
-      <form onSubmit={handleFormSubmit}>
-        <Stack spacing={2}>
-          <TextField
-            label="First Name"
-            variant="outlined"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-            sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
-            InputProps={{
-              style: { color: '#e0f7fa' }
-            }}
-          />
-          <TextField
-            label="Last Name"
-            variant="outlined"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-            sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
-            InputProps={{
-              style: { color: '#e0f7fa' }
-            }}
-          />
-          <TextField
-            label="Username"
-            variant="outlined"
-            name="username"
-            value={formData.username}
-            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-            sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
-            InputProps={{
-              style: { color: '#e0f7fa' }
-            }}
-          />
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel id="level-label" sx={{ color: '#80deea' }}>Level</InputLabel>
+    <div>
+      <div className="w-full max-w-md mx-auto p-8 rounded-lg shadow-2xl bg-gray-900 bg-opacity-80 backdrop-blur-md">
+        <Stack spacing={3}>
+          {alert && (
+            <Alert severity={alert.type} onClose={() => setAlert(null)} sx={{ mb: 2 }}>
+              {alert.message}
+            </Alert>
+          )}
+          <FormControl fullWidth margin="normal">
+            <InputLabel htmlFor="level" sx={{ color: '#81d4fa' }}>Level</InputLabel>
             <Select
-              labelId="level-label"
-              label="Level"
+              id="level"
               name="level"
               value={formData.level}
-              onChange={handleInputChange as (event: SelectChangeEvent<string>) => void} // Asegúrate de castear correctamente aquí
-              sx={{ color: '#e0f7fa', '.MuiOutlinedInput-notchedOutline': { borderColor: '#80deea' } }}
+              onChange={handleInputChange}
+              fullWidth
+              required
+              sx={{
+                bgcolor: '#1e1e1e',
+                borderColor: '#03a9f4',
+                '.MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#03a9f4',
+                },
+                '&:hover': {
+                  bgcolor: '#2d2d2d',
+                },
+                color: '#e0f7fa',
+              }}
             >
               {levels.map(level => (
-                <MenuItem key={level.level} value={level.level.toString()}>
-                  Level {level.level} - ${level.amountUSD}
+                <MenuItem key={level.level} value={level.level}>
+                  <span className="text-teal-300">Level {level.level}</span>
                 </MenuItem>
               ))}
-              <MenuItem value="0">Custom Amount</MenuItem>
+              <MenuItem value="0">
+                <span className="text-teal-300">Custom Amount</span>
+              </MenuItem>
             </Select>
           </FormControl>
           {formData.level === '0' && (
             <TextField
-              label="Custom Amount (USD)"
-              variant="outlined"
               name="customAmountUSD"
+              label="Custom Amount (USD)"
+              type="number"
               value={formData.customAmountUSD}
-              onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-              sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
-              InputProps={{
-                style: { color: '#e0f7fa' }
+              onChange={handleInputChange}
+              fullWidth
+              required
+              sx={{
+                input: { color: '#e0f7fa' },
+                label: { color: '#81d4fa' },
+                bgcolor: '#1e1e1e',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#03a9f4',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#03a9f4',
+                },
               }}
             />
           )}
           <TextField
-            label="Sponsor Username"
-            variant="outlined"
-            name="sponsor"
-            value={formData.sponsor}
-            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>} // Cast a HTMLInputElement
-            sx={{ input: { color: '#e0f7fa' }, label: { color: '#80deea' }, borderColor: '#80deea' }}
-            InputProps={{
-              style: { color: '#e0f7fa' }
+            name="firstName"
+            label="First Name"
+            value={formData.firstName}
+            onChange={handleInputChange}
+            fullWidth
+            required
+            sx={{
+              input: { color: '#e0f7fa' },
+              label: { color: '#81d4fa' },
+              bgcolor: '#1e1e1e',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#03a9f4',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#03a9f4',
+              },
             }}
           />
-          {loading ? (
-            <CircularProgress color="secondary" />
-          ) : (
-            <Button type="submit" variant="contained" sx={{ backgroundColor: '#009688', color: '#ffffff' }}>
-              Register
-            </Button>
-          )}
-          {alert && (
-            <Alert severity={alert.type} onClose={() => setAlert(null)}>
-              {alert.message}
-            </Alert>
-          )}
-        </Stack>
-      </form>
-      {isWalletConnected ? (
-        <Box mt={2}>
-          <Typography variant="body1">
-            Wallet connected: {walletAddress}{' '}
-            <RiFileCopyLine onClick={handleCopyWalletAddress} style={{ cursor: 'pointer', color: '#80deea' }} />
-          </Typography>
-          <Button onClick={disconnectWallet} variant="outlined" sx={{ borderColor: '#009688', color: '#009688' }}>
-            Disconnect Wallet
+          <TextField
+            name="lastName"
+            label="Last Name"
+            value={formData.lastName}
+            onChange={handleInputChange}
+            fullWidth
+            required
+            sx={{
+              input: { color: '#e0f7fa' },
+              label: { color: '#81d4fa' },
+              bgcolor: '#1e1e1e',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#03a9f4',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#03a9f4',
+              },
+            }}
+          />
+          <TextField
+            name="username"
+            label="Username"
+            value={formData.username}
+            onChange={handleInputChange}
+            fullWidth
+            required
+            sx={{
+              input: { color: '#e0f7fa' },
+              label: { color: '#81d4fa' },
+              bgcolor: '#1e1e1e',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#03a9f4',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#03a9f4',
+              },
+            }}
+          />
+          <TextField
+            name="sponsor"
+            label="Sponsor (Optional)"
+            value={formData.sponsor}
+            onChange={handleInputChange}
+            fullWidth
+            sx={{
+              input: { color: '#e0f7fa' },
+              label: { color: '#81d4fa' },
+              bgcolor: '#1e1e1e',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#03a9f4',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#03a9f4',
+              },
+            }}
+          />
+          <div className="flex flex-col md:flex-row justify-between items-center mt-4 space-y-2 md:space-y-0">
+            {isWalletConnected ? (
+              <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+                <Button
+                  variant="outlined"
+                  color="success"
+                  onClick={handleCopyWalletAddress}
+                  disabled={loading}
+                  sx={{
+                    borderColor: '#00c853',
+                    color: '#00c853',
+                    borderRadius: '20px',
+                    borderWidth: '2px',
+                    padding: '8px 16px',
+                    '&:hover': {
+                      borderColor: '#00bfae',
+                      color: '#00bfae',
+                    },
+                  }}
+                >
+                  Copy Address
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={disconnectWallet}
+                  disabled={loading}
+                  sx={{
+                    borderColor: '#f44336',
+                    color: '#f44336',
+                    borderRadius: '20px',
+                    borderWidth: '2px',
+                    padding: '8px 16px',
+                    '&:hover': {
+                      borderColor: '#d32f2f',
+                      color: '#d32f2f',
+                    },
+                  }}
+                >
+                  Disconnect
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={connectWallet}
+                disabled={loading}
+                sx={{
+                  bgcolor: '#03a9f4',
+                  '&:hover': {
+                    bgcolor: '#0288d1',
+                  },
+                  width: '100%',
+                  padding: '12px',
+                }}
+              >
+                Connect Wallet
+              </Button>
+            )}
+          </div>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleFormSubmit}
+            disabled={loading}
+            sx={{
+              bgcolor: '#ab47bc',
+              '&:hover': {
+                bgcolor: '#8e24aa',
+              },
+              width: '100%',
+              padding: '12px',
+            }}
+          >
+            Submit
           </Button>
-        </Box>
-      ) : (
-        <Button onClick={connectWallet} variant="contained" sx={{ backgroundColor: '#009688', color: '#ffffff', mt: 2 }}>
-          Connect Wallet
-        </Button>
-      )}
-    </Box>
+        </Stack>
+      </div>
+    </div>
   );
+  
 };
 
 export default Register;
