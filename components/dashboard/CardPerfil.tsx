@@ -46,7 +46,7 @@ const CardPerfil = () => {
     const userLevel = Number(user.level);
     const userPlan = planes.find(plan => plan.id === userLevel);
 
-    const tokenAmount = userPlan ? userPlan.price : 'N/A';
+    const tokenAmount = userPlan ? userPlan.tokens : 'N/A';
     const contributionAmount = userPlan ? userPlan.price : 'N/A';
 
     const teamPool = user.sponsor || 'N/A';
