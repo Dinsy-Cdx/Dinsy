@@ -3,6 +3,7 @@ export const planes = [
         id: 1,
         title: "Básico",
         price: "100",
+        tokens: "1",
         subtitle: "",
         features: [
             "Gana de todos sus referidos directos",
@@ -19,6 +20,7 @@ export const planes = [
         id: 2,
         title: "Junior",
         price: "500",
+        tokens: "7",
         subtitle: "",
         features: [
             "Gana de todos sus referidos directos e indirectos hasta en un 2do nivel de profundidad",
@@ -35,6 +37,7 @@ export const planes = [
         id: 3,
         title: "Corredor inmobiliario",
         price: "2000",
+        tokens: "28",
         subtitle: "",
         features: [
             "Gana de todos sus referidos directos e indirectos hasta en un 3er nivel de profundidad",
@@ -51,6 +54,7 @@ export const planes = [
         id: 4,
         title: "Asesor inmobiliario",
         price: "7000",
+        tokens: "98",
         subtitle: "",
         features: [
             "Gana de todos sus referidos directos e indirectos hasta en un 4to nivel de profundidad",
@@ -67,6 +71,7 @@ export const planes = [
         id: 5,
         title: "Administrador Inmobiliario",
         price: "25000",
+        tokens: "350",
         subtitle: "",
         features: [
             "Gana de todos sus referidos directos e indirectos hasta en un 5to nivel de profundidad",
@@ -83,6 +88,7 @@ export const planes = [
         id: 6,
         title: "Gerente Inmobiliario",
         price: "50000",
+        tokens: "700",
         subtitle: "",
         features: [
             "Gana de todos sus referidos directos e indirectos hasta en un 6to nivel de profundidad",
@@ -99,6 +105,7 @@ export const planes = [
         id: 7,
         title: "Director Inmobiliario",
         price: "100000",
+        tokens: "1400",
         subtitle: "",
         features: [
             "Gana de todos sus referidos directos e indirectos hasta en un 7mo nivel de profundidad",
