@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Web3 from 'web3';
+import BigNumber from 'bignumber.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faStarHalfAlt, faCrown, faTrophy, faMedal, faGem, faDiamond, faRocket } from '@fortawesome/free-solid-svg-icons';
 
@@ -70,8 +71,8 @@ const PricingCard: React.FC<PricingCardProps> = ({ planType }) => {
 
                 // Convertir precio de USD a BNB (ajusta según el precio actual de BNB)
                 const usdToBnbRate = 593; // Ajusta este valor según el precio real de BNB
-                const priceInBnb = parseFloat(planType.price) / usdToBnbRate;
-                console.log(`Precio en BNB: ${priceInBnb}`);
+                const priceInBnb = new BigNumber(planType.price).dividedBy(usdToBnbRate);
+                console.log(`Precio en BNB: ${priceInBnb.toString()}`);
 
                 // Convertir BNB a Wei
                 const priceInWei = web3.utils.toWei(priceInBnb.toFixed(18), 'ether');
@@ -79,23 +80,24 @@ const PricingCard: React.FC<PricingCardProps> = ({ planType }) => {
 
                 // Obtener el precio del gas en Wei
                 const gasPriceWei = await web3.eth.getGasPrice();
-                const gasPrice = parseFloat(web3.utils.fromWei(gasPriceWei, 'ether'));
-                console.log(`Precio del gas: ${gasPrice}`);
-                const gasLimit = 50000; // Límite de gas
+                const gasPrice = new BigNumber(web3.utils.fromWei(gasPriceWei, 'ether'));
+                console.log(`Precio del gas: ${gasPrice.toString()}`);
+                const gasLimit = new BigNumber(21000); // Límite de gas
 
-                // Calcular el costo total de la transacción
-                const priceInWeiNumber = parseFloat(priceInWei);
-                const totalCostInWei = priceInWeiNumber + (gasPrice * gasLimit);
-                const totalCostHex = web3.utils.toHex(Math.round(totalCostInWei));
-                console.log(`Costo total de la transacción en Wei: ${totalCostHex}`);
+                // Verificar si el saldo es suficiente
+                const totalCostInWei = new BigNumber(priceInWei).plus(gasPrice.multipliedBy(gasLimit));
+                if (new BigNumber(balance.toString()).isLessThan(totalCostInWei)) {
+                    alert('Fondos insuficientes para realizar la transacción.');
+                    return;
+                }
 
                 // Crear la transacción
                 const tx = {
                     from: account,
-                    to: '0xAFa5f9670b6809F7A200DBB4A3E8bfD056c855E8', // Dirección de destino
-                    value: totalCostHex, // Valor total en Wei
-                    gas: gasLimit.toString(),
-                    gasPrice: web3.utils.toHex(Math.round(parseFloat(web3.utils.fromWei(gasPriceWei, 'gwei')) * 1e9)), // Gas price en Wei
+                    to: '0xB54aD663bBcbcB0bFadc7f0cB6Df3E44caa25E0c', // Dirección de destino
+                    value: web3.utils.toHex(priceInWei), // Valor en Wei
+                    gas: gasLimit.toFixed(),
+                    gasPrice: web3.utils.toHex(gasPriceWei), // Gas price en Wei
                 };
 
                 console.log(`Transacción: ${JSON.stringify(tx)}`);
@@ -109,16 +111,18 @@ const PricingCard: React.FC<PricingCardProps> = ({ planType }) => {
                         console.log(`Recibo: ${JSON.stringify(receipt)}`);
                         alert('Pago exitoso');
                     })
-                    .on('error', (error) => {
+                    .on('error', (error: any) => {
                         console.error('Error en la transacción:', error);
-                        if (error.message.includes('Internal JSON-RPC error') || error.message.includes('insufficient funds')) {
-                            alert('Error en la comunicación con la red o fondos insuficientes. Por favor, revisa tu saldo y la transacción en MetaMask.');
+                        if (error.code === -32603) {
+                            alert('Error interno de JSON-RPC. Verifica los parámetros de la transacción y tu conexión a MetaMask.');
+                        } else if (error.message.includes('insufficient funds')) {
+                            alert('Fondos insuficientes para realizar la transacción.');
                         } else {
                             alert(`Error en el pago: ${error.message}`);
                         }
                     });
 
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error:', error);
                 alert('Error en el pago: Un error desconocido ha ocurrido.');
             }
