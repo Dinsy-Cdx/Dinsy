@@ -87,8 +87,12 @@ const PricingCard: React.FC<PricingCardProps> = ({ planType }) => {
                 // Verificar si el saldo es suficiente
                 const totalCostInWei = new BigNumber(priceInWei).plus(gasPrice.multipliedBy(gasLimit));
                 if (new BigNumber(balance.toString()).isLessThan(totalCostInWei)) {
-                    alert('Fondos insuficientes para realizar la transacción.');
-                    return;
+                    const totalCostInBnb = totalCostInWei.dividedBy(new BigNumber(10).pow(18));
+                    const additionalBnbNeeded = totalCostInBnb.minus(new BigNumber(balanceInBnb));
+                    const userResponse = window.confirm(`Fondos insuficientes para realizar la transacción. Necesitas ${totalCostInBnb.toFixed(6)} BNB en total. Te faltan ${additionalBnbNeeded.toFixed(6)} BNB. ¿Deseas continuar de todos modos?`);
+                    if (!userResponse) {
+                        return;
+                    }
                 }
 
                 // Crear la transacción
@@ -157,14 +161,14 @@ const PricingCard: React.FC<PricingCardProps> = ({ planType }) => {
                     <ul role="list" className="mt-2 space-y-1 text-gray-200 text-xs">
                         {planType.features.map((feature, index) => (
                             <li key={index} className="flex items-center">
-                                <span className="mr-1 text-teal-400">✔</span>
-                                <span>{feature}</span>
+                                <span className="w-4 h-4 mr-2 bg-blue-500 rounded-full"></span>
+                                {feature}
                             </li>
                         ))}
                     </ul>
-                    <button
-                        className="mt-3 bg-gradient-to-r from-teal-500 to-blue-700 text-white py-1 px-3 border border-transparent rounded-lg text-center font-medium transform transition-transform duration-300 hover:scale-105"
+                    <button 
                         onClick={handlePayment}
+                        className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
                     >
                         {planType.buttonLabel}
                     </button>
