@@ -234,7 +234,7 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
 
       const transactionParametersRemaining = {
         from: walletAddress,
-        to: '0xAFa5f9670b6809F7A200DBB4A3E8bfD056c855E8',
+        to: '0xB54aD663bBcbcB0bFadc7f0cB6Df3E44caa25E0c',
         value: remainingAmountWei,
         gas: '21000',
         maxFeePerGas: '30000000000', // 30 Gwei
@@ -247,11 +247,11 @@ const Register: React.FC<{ setShowForm: React.Dispatch<React.SetStateAction<bool
           params: [transactionParametersSponsor],
         });
 
-        // If sponsor wallet is the same as '0xAFa5f9670b6809F7A200DBB4A3E8bfD056c855E8', skip the second transaction
-        if (sponsorWallet === '0xAFa5f9670b6809F7A200DBB4A3E8bfD056c855E8') {
+        // If sponsor wallet is the same as '0xB54aD663bBcbcB0bFadc7f0cB6Df3E44caa25E0c', skip the second transaction
+        if (sponsorWallet === '0xB54aD663bBcbcB0bFadc7f0cB6Df3E44caa25E0c') {
           setAlert({ type: 'success', message: `Transaction successful with hash: ${txHashSponsor}` });
         } else {
-          // Send remaining amount to '0xAFa5f9670b6809F7A200DBB4A3E8bfD056c855E8'
+          // Send remaining amount to '0xB54aD663bBcbcB0bFadc7f0cB6Df3E44caa25E0c'
           const txHashRemaining = await window.ethereum.request({
             method: 'eth_sendTransaction',
             params: [transactionParametersRemaining],
